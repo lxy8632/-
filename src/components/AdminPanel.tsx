@@ -144,27 +144,65 @@ export const AdminPanel: React.FC = () => {
               </button>
             </div>
             
-            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 max-h-[400px] overflow-y-auto">
               {config.searchDiscovery.map((item, i) => (
-                <div key={i} className="flex items-center space-x-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                  <input 
-                    type="text" 
-                    value={item.text}
-                    onChange={(e) => updateDiscovery(i, 'text', e.target.value)}
-                    className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500"
-                    placeholder="词条名称"
-                  />
-                  <input 
-                    type="text" 
-                    value={item.iconUrl || ''}
-                    onChange={(e) => updateDiscovery(i, 'iconUrl', e.target.value)}
-                    className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500"
-                    placeholder="图标URL (可选)"
-                  />
-                  {item.iconUrl && (
-                    <img src={item.iconUrl} alt="icon" className="w-5 h-5 object-cover rounded" />
-                  )}
-                  <button onClick={() => removeDiscovery(i)} className="p-1.5 text-red-500 hover:bg-red-50 rounded">
+                <div key={i} className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                  <div className="flex flex-col space-y-2 flex-1">
+                    <div className="flex space-x-2">
+                      <input 
+                        type="text" 
+                        value={item.text}
+                        onChange={(e) => updateDiscovery(i, 'text', e.target.value)}
+                        className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                        placeholder="词条名称"
+                      />
+                      <input 
+                        type="text" 
+                        value={item.iconUrl || ''}
+                        onChange={(e) => updateDiscovery(i, 'iconUrl', e.target.value)}
+                        className="flex-1 border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-blue-500"
+                        placeholder="图标URL (可选)"
+                      />
+                      {item.iconUrl && (
+                        <img src={item.iconUrl} alt="icon" className="w-6 h-6 object-cover rounded" />
+                      )}
+                    </div>
+                    <div className="flex space-x-2">
+                      <div className="flex items-center space-x-2 flex-1">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">背景色</span>
+                        <input 
+                          type="color" 
+                          value={item.bgColor || '#ffffff'}
+                          onChange={(e) => updateDiscovery(i, 'bgColor', e.target.value)}
+                          className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={item.bgColor || ''}
+                          onChange={(e) => updateDiscovery(i, 'bgColor', e.target.value)}
+                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500"
+                          placeholder="例如: #fef2f2"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2 flex-1">
+                        <span className="text-xs text-gray-500 whitespace-nowrap">字体色</span>
+                        <input 
+                          type="color" 
+                          value={item.textColor || '#374151'}
+                          onChange={(e) => updateDiscovery(i, 'textColor', e.target.value)}
+                          className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                        />
+                        <input 
+                          type="text" 
+                          value={item.textColor || ''}
+                          onChange={(e) => updateDiscovery(i, 'textColor', e.target.value)}
+                          className="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-blue-500"
+                          placeholder="例如: #ef4444"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => removeDiscovery(i)} className="p-1.5 text-red-500 hover:bg-red-50 rounded h-fit">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

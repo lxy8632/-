@@ -39,6 +39,8 @@ export interface ProductRanking {
 export interface SearchDiscoveryItem {
   text: string;
   iconUrl?: string;
+  bgColor?: string;
+  textColor?: string;
 }
 
 export interface AppConfig {
@@ -88,7 +90,12 @@ export interface AppConfig {
 
 const defaultConfig: AppConfig = {
   searchDiscovery: [
-    { text: '薪动有礼', iconUrl: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='8' width='18' height='4' rx='1'/%3E%3Cpath d='M12 8v13'/%3E%3Cpath d='M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'/%3E%3Cpath d='M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'/%3E%3C/svg%3E" },
+    { 
+      text: '薪动有礼', 
+      iconUrl: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='8' width='18' height='4' rx='1'/%3E%3Cpath d='M12 8v13'/%3E%3Cpath d='M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'/%3E%3Cpath d='M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'/%3E%3C/svg%3E",
+      bgColor: '#fef2f2',
+      textColor: '#ef4444'
+    },
     { text: '黄金', iconUrl: 'https://s1.img-e.com/20260420/69e60b13368aa.png' },
     { text: '购汇' },
     { text: '积分兑换' },
@@ -98,6 +105,17 @@ const defaultConfig: AppConfig = {
     { text: '外汇' },
     { text: '贷款' },
     { text: '限额' },
+    { text: '理财' },
+    { text: '基金' },
+    { text: '消费贷' },
+    { text: '信用卡' },
+    { text: '转账' },
+    { text: '存款' },
+    { text: '养老金' },
+    { text: '贵金属' },
+    { text: '大额存单' },
+    { text: '结构性存款' },
+    { text: '数字人民币' }
   ],
   hotSearches: [
     { title: '积存金', desc: '', type: 'hot' },
@@ -188,52 +206,28 @@ const defaultConfig: AppConfig = {
   },
   productRankings: {
     funds: [
-      { 
-        id: 'f1', 
-        name: '中欧盈欣稳健6个月持有混合(FOF)A', 
-        code: '025218', 
-        tags: ['FOF-偏债混合型'], 
-        value: '96.12%', 
-        valueDesc: '近1年涨跌幅',
-        mainDesc: { text: '收益排名', color: '#000000', fontSize: 14 },
-        subDesc: { text: '前1%', color: '#ef4444', fontSize: 12 }
-      },
-      { 
-        id: 'f2', 
-        name: '浦银安盛盈丰多元3个月持有混合(F...', 
-        code: '025269', 
-        tags: ['FOF-偏债混合型'], 
-        value: '66.86%', 
-        valueDesc: '近1年涨跌幅',
-        mainDesc: { text: '热度排名', color: '#000000', fontSize: 14 },
-        subDesc: { text: '前1%', color: '#ef4444', fontSize: 12 }
-      },
-      { id: 'f3', name: '易方达原油A美元现汇QDII', code: '003322', tags: ['QDII-另类'], value: '41.83%', valueDesc: '近1年涨跌幅' },
-      { id: 'f4', name: '国投瑞银白银期货(LOF)A', code: '161226', tags: ['商品(不含QDII)'], value: '157.41%', valueDesc: '近1年涨跌幅' },
+      { id: 'f1', name: '大成高鑫股票A', badge: 'hot', code: '000628', tags: ['股票型基金', '增长型R4'], value: '432.88%', valueDesc: '成立至今涨幅' },
+      { id: 'f2', name: '博道衍晟混合C', code: '026352', tags: ['混合型基金', '稳健型R3'], value: '4.65%', valueDesc: '成立至今涨幅' },
+      { id: 'f3', name: '大成高鑫股票C', code: '011066', tags: ['股票型基金', '增长型R4'], value: '69.18%', valueDesc: '成立至今涨幅' },
+      { id: 'f4', name: '人保民富债券C', code: '018323', tags: ['债券型基金', '稳健型R3'], value: '近期热销', valueDesc: '' },
+      { id: 'f5', name: '易方达黄金ETF联接A', code: '000307', tags: ['指数型基金', '增长型R4'], value: '1.30%', valueDesc: '成立至今涨幅' },
+      { id: 'f6', name: '南方东英神州基金', code: '968153', tags: ['债券型基金', '谨慎型R2'], value: '6.70%', valueDesc: '成立至今涨幅' },
+      { id: 'f7', name: '国泰中证新能源汽车ETF联结A', code: '009067', tags: ['指数型基金', '增长型R4'], value: '172.48%', valueDesc: '成立至今涨幅' },
+      { id: 'f8', name: '国泰CES半导体芯片行业', code: '008281', tags: ['指数型基金', '增长型R4'], value: '175.11%', valueDesc: '成立至今涨幅' },
+      { id: 'f9', name: '博时黄金交易型开放式', code: '008281', tags: ['指数型基金', '增长型R4'], value: '234.47%', valueDesc: '成立至今涨幅' },
+      { id: 'f10', name: '汇添富中证1000指数增强A', code: '017953', tags: ['指数型基金', '增长型R4'], value: '82.10%', valueDesc: '成立至今涨幅' }
     ],
     wealth: [
-      { 
-        id: 'w1', 
-        name: '招银理财多资产FOF平衡日开3A', 
-        code: '100753A', 
-        tags: ['代销理财'], 
-        value: '9.06%', 
-        valueDesc: '近1年年化',
-        mainDesc: { text: '热度排名', color: '#000000', fontSize: 14 },
-        subDesc: { text: '前1%', color: '#ef4444', fontSize: 12 }
-      },
-      { 
-        id: 'w2', 
-        name: '交银理财稳享固收精选日开42号180天', 
-        code: 'JY040220', 
-        tags: ['代销理财'], 
-        value: '近期热销', 
-        valueDesc: '', 
-        badge: 'hot',
-        mainDesc: { text: '收益排名', color: '#000000', fontSize: 14 },
-        subDesc: { text: '前1%', color: '#ef4444', fontSize: 12 }
-      },
-      { id: 'w3', name: '定期宝 招银理财增利指南针(和...', code: '106921A', tags: ['代销理财'], value: '2.00%-2.60%', valueDesc: '业绩比较基准' },
+      { id: 'w1', name: '富竹纯债14天持有期26号E', badge: 'hot', code: 'MSFBAE60226E', tags: ['安逸型R1', '代销'], value: '1.30%', valueDesc: '成立以来年化' },
+      { id: 'w2', name: '兴银添利天天利77号N', code: 'MSFBAE60226E', tags: ['安逸型R1', '代销'], value: '1.231%', valueDesc: '7日年化' },
+      { id: 'w3', name: '兴银理财稳添利日盈块享', code: 'Y09YJ01251052R', tags: ['安逸型R1', '代销'], value: '3.82%', valueDesc: '成立以来年化' },
+      { id: 'w4', name: '丰利兴动科技成长3', code: 'Y09YJ01251052R', tags: ['稳健型R3', '代销'], value: '10.012%', valueDesc: '成立以来年化' },
+      { id: 'w5', name: '兴银添利天天利64号N', code: 'Y09YJ01251052R', tags: ['稳健型R3', '代销'], value: '1.30%', valueDesc: '7日年化' },
+      { id: 'w6', name: '添利1号', code: 'Y09YJ01251052', tags: ['安逸型R1', '代销'], value: '1.230%', valueDesc: '七日年化' },
+      { id: 'w7', name: '丰利逸动日开1A', code: 'Y09YJ01251052', tags: ['谨慎型R2', '代销'], value: '5.650%', valueDesc: '成立以来年化' },
+      { id: 'w8', name: '兴银添利天天利37号N', code: 'YO5A9K21807', tags: ['安逸型R1', '代销'], value: '1.205%', valueDesc: '七日年化' },
+      { id: 'w9', name: '稳添利日盈增利稳定', code: 'YO5A9S65078A', tags: ['谨慎型R2', '代销'], value: '2.002%', valueDesc: '成立以来年化' },
+      { id: 'w10', name: '丰利悦动1年持有期3号A', code: 'YO5A9MX0001B', tags: ['谨慎型R2', '代销'], value: '4.354%', valueDesc: '成立以来年化' }
     ]
   }
 };

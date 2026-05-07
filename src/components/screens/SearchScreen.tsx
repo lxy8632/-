@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronLeft, Search, Mic, Trash2, Flame, ChevronDown, ChevronUp, X, RefreshCw, Sparkles, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ScreenType } from '../MobileSimulator';
@@ -70,7 +70,7 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
   });
   const [activeTab, setActiveTab] = useState('全部热搜');
   const [isDeleteMode, setIsDeleteMode] = useState(false);
-  const [discoveryItems, setDiscoveryItems] = useState(config.searchDiscovery);
+  const [discoveryPageIndex, setDiscoveryPageIndex] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showMiddleAd, setShowMiddleAd] = useState(true);
   const [aiQuestionIndex, setAiQuestionIndex] = useState(0);
@@ -81,7 +81,7 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
   }, [history]);
 
   useEffect(() => {
-    setDiscoveryItems(config.searchDiscovery);
+    setDiscoveryPageIndex(0);
   }, [config.searchDiscovery]);
 
   // Handle Debounced Search
@@ -355,15 +355,16 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 500);
     
-    setDiscoveryItems(prev => {
-      const shuffled = [...prev];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-      }
-      return shuffled;
-    });
+    if (config.searchDiscovery.length > 0) {
+      const totalPages = Math.ceil(config.searchDiscovery.length / 7);
+      setDiscoveryPageIndex(prev => (prev + 1) % totalPages);
+    }
   };
+
+  const currentDiscoveryItems = useMemo(() => {
+    const start = discoveryPageIndex * 7;
+    return config.searchDiscovery.slice(start, start + 7);
+  }, [config.searchDiscovery, discoveryPageIndex]);
 
   const handleSearch = (q: string) => {
     if (!q.trim()) return;
@@ -443,75 +444,49 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
     const products = activeTab === '理财热搜' ? config.productRankings.wealth : config.productRankings.funds;
     
     return (
-      <div className="mt-2">
-        <div className="space-y-3">
-          {products.map((item, i) => (
-            <div key={item.id} className="bg-white rounded-xl p-4 cursor-pointer shadow-sm border border-gray-100" onClick={() => handleSearch(item.name)}>
-              <div className="flex items-start mb-3">
-                <div className={`w-5 h-5 rounded flex items-center justify-center text-xs font-bold mr-2 shrink-0 ${
-                  i === 0 ? 'bg-red-100 text-red-500' :
-                  i === 1 ? 'bg-orange-100 text-orange-500' :
-                  i === 2 ? 'bg-yellow-100 text-yellow-600' :
-                  'bg-gray-100 text-gray-400'
-                }`}>
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[15px] font-medium text-gray-900 truncate">{item.name}</div>
-                  <div className="flex items-center mt-1 space-x-2 text-xs text-gray-500">
-                    {item.tags.map((tag, idx) => (
-                      <React.Fragment key={idx}>
-                        <span>{tag}</span>
-                        {idx < item.tags.length - 1 && <span className="w-px h-2.5 bg-gray-300"></span>}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
+      <div className="mt-2 bg-white rounded-xl px-4 py-1 shadow-sm">
+        {products.map((item, i) => (
+          <div key={item.id} className="py-[14px] flex items-center border-b border-[#F5F5F5] last:border-0 cursor-pointer" onClick={() => handleSearch(item.name)}>
+            <div className={`w-6 text-center text-[18px] shrink-0 ${
+              i === 0 ? 'text-[#ef4444] font-semibold' :
+              i === 1 ? 'text-[#f97316] font-semibold' :
+              i === 2 ? 'text-[#eab308] font-semibold' :
+              'text-[#8A96AC] font-medium'
+            }`} style={{ fontFamily: 'Arial, sans-serif' }}>
+              {i + 1}
+            </div>
+            
+            <div className="flex-1 min-w-0 ml-2.5 mr-3">
+              <div className="flex items-center">
+                <div className="text-[15px] text-[#222222] font-medium truncate leading-tight">{item.name}</div>
+                {item.badge === 'hot' && (
+                  <span className="ml-[5px] text-[#ef4444] text-[10px] font-medium px-[3px] py-[1px] bg-[#fef1f1] rounded-[3px] whitespace-nowrap leading-tight">热</span>
+                )}
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className={`text-xl font-bold ${item.value.includes('%') || item.badge === 'hot' ? 'text-red-500' : 'text-gray-900'}`}>
-                    {item.value}
-                  </div>
-                  {item.valueDesc && <div className="text-xs text-gray-500 mt-0.5">{item.valueDesc}</div>}
-                </div>
-                
-                <div className="flex-1 px-2 border-l border-gray-100">
-                  {item.mainDesc && (
-                    <div 
-                      style={{ 
-                        color: item.mainDesc.color || '#000000', 
-                        fontSize: `${item.mainDesc.fontSize || 16}px` 
-                      }} 
-                      className="font-medium"
-                    >
-                      {item.mainDesc.text}
-                    </div>
-                  )}
-                  {item.subDesc && (
-                    <div 
-                      style={{ 
-                        color: item.subDesc.color || '#9ca3af', 
-                        fontSize: `${item.subDesc.fontSize || 12}px` 
-                      }} 
-                      className="mt-0.5 flex items-center"
-                    >
-                      {item.subDesc.text}
-                      {item.subDesc.text === '热度排名' && <span className="ml-1 w-3 h-3 border border-gray-300 rounded-sm inline-block"></span>}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="shrink-0 ml-2">
-                  <button className="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium hover:bg-red-600 transition-colors">
-                    立即购买
-                  </button>
-                </div>
+              <div className="text-[11px] text-[#999999] mt-[5px] flex items-center truncate">
+                {item.code && (
+                  <>
+                    <span>{item.code}</span>
+                    <span className="mx-1.5 text-[#e5e5e5]">|</span>
+                  </>
+                )}
+                {item.tags && item.tags.map((tag, idx) => (
+                  <React.Fragment key={idx}>
+                    <span>{tag}</span>
+                    {idx < item.tags.length - 1 && <span className="mx-1.5 text-[#e5e5e5]">|</span>}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
+            
+            <div className="text-right shrink-0">
+              <div className={`text-[16px] font-semibold ${item.value.includes('%') || item.value.includes('热销') ? 'text-[#ef4444]' : 'text-[#333333]'}`} style={{ fontFamily: 'Arial, sans-serif' }}>
+                {item.value}
+              </div>
+              {item.valueDesc && <div className="text-[11px] text-[#999999] mt-[3px]">{item.valueDesc}</div>}
+            </div>
+          </div>
+        ))}
       </div>
     );
   };
@@ -611,11 +586,15 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
               />
             </div>
             <CollapsibleTagGroup 
-              items={discoveryItems}
+              items={currentDiscoveryItems}
               renderItem={(item, i) => (
                 <span 
                   key={i} 
-                  className="px-3 py-1.5 bg-white/80 backdrop-blur-sm text-gray-700 text-xs rounded-lg flex items-center cursor-pointer shadow-sm border border-gray-100"
+                  className="px-3 py-1.5 backdrop-blur-sm text-xs rounded-lg flex items-center cursor-pointer shadow-sm border border-gray-100"
+                  style={{
+                    backgroundColor: item.bgColor || 'rgba(255, 255, 255, 0.8)',
+                    color: item.textColor || '#374151'
+                  }}
                   onClick={() => handleSearch(item.text)}
                 >
                   {item.iconUrl && <img src={item.iconUrl} alt="icon" className="w-4 h-4 mr-1 object-contain" />}

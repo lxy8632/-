@@ -3,6 +3,7 @@ import { ChevronLeft, Search, Mic, Trash2, Flame, ChevronDown, ChevronUp, X, Ref
 import { motion, AnimatePresence } from 'motion/react';
 import { ScreenType } from '../MobileSimulator';
 import { useConfig } from '../../store';
+import { generateRecommendations, mockUsers } from '../../services/recommendationEngine';
 
 const CollapsibleTagGroup: React.FC<{ items: any[], renderItem: (item: any, i: number) => React.ReactNode }> = ({ items, renderItem }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,7 +60,7 @@ const CollapsibleTagGroup: React.FC<{ items: any[], renderItem: (item: any, i: n
 };
 
 export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: string) => void }> = ({ onNavigate }) => {
-  const { config } = useConfig();
+  const { config, users, setUsers, currentUserIndex } = useConfig();
   const [query, setQuery] = useState('');
   const [history, setHistory] = useState<string[]>(() => {
     try {
@@ -351,30 +352,62 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
     return () => clearInterval(interval);
   }, [config.aiSearch?.visible, config.aiSearch?.questions]);
 
+  const allDiscoveryItems = useMemo(() => {
+    const currentUser = users[currentUserIndex] || users[0];
+    return generateRecommendations(currentUser, config.searchDiscovery);
+  }, [config.searchDiscovery, users, currentUserIndex]);
+
   const handleRefreshDiscovery = () => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 500);
     
-    if (config.searchDiscovery.length > 0) {
-      const totalPages = Math.ceil(config.searchDiscovery.length / 7);
+    if (allDiscoveryItems.length > 0) {
+      const totalPages = Math.ceil(allDiscoveryItems.length / 7);
       setDiscoveryPageIndex(prev => (prev + 1) % totalPages);
     }
   };
 
   const currentDiscoveryItems = useMemo(() => {
     const start = discoveryPageIndex * 7;
-    return config.searchDiscovery.slice(start, start + 7);
-  }, [config.searchDiscovery, discoveryPageIndex]);
+    return allDiscoveryItems.slice(start, start + 7);
+  }, [allDiscoveryItems, discoveryPageIndex]);
 
   const handleSearch = (q: string) => {
     if (!q.trim()) return;
     const newHistory = [q, ...history.filter(item => item !== q)].slice(0, 10);
     setHistory(newHistory);
     localStorage.setItem('search_history', JSON.stringify(newHistory));
+    
+    // Update user's historySearch
+    setUsers(prevUsers => {
+      const newUsers = [...prevUsers];
+      if (newUsers[currentUserIndex]) {
+        newUsers[currentUserIndex] = {
+          ...newUsers[currentUserIndex],
+          historySearch: [q, ...newUsers[currentUserIndex].historySearch.filter(w => w !== q)].slice(0, 10)
+        };
+      }
+      return newUsers;
+    });
+
     onNavigate('results', q);
   };
 
-  const handleBannerClick = (link: string) => {
+  const handleBrowse = (word: string) => {
+    setUsers(prevUsers => {
+      const newUsers = [...prevUsers];
+      if (newUsers[currentUserIndex]) {
+        newUsers[currentUserIndex] = {
+          ...newUsers[currentUserIndex],
+          recentBrowse: [word, ...newUsers[currentUserIndex].recentBrowse.filter(w => w !== word)].slice(0, 10)
+        };
+      }
+      return newUsers;
+    });
+  };
+
+  const handleBannerClick = (link: string, title?: string) => {
+    if (title) handleBrowse(title);
     if (link && link !== '#') {
       onNavigate(link as any);
     }
@@ -579,7 +612,7 @@ export const SearchScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: s
           {/* Discovery */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-[14px] font-bold text-gray-900">搜索发现</h3>
+              <h3 className="text-[14px] font-bold text-gray-900">猜你想搜</h3>
               <RefreshCw 
                 className={`w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ${isRefreshing ? 'animate-spin' : ''}`} 
                 onClick={handleRefreshDiscovery} 

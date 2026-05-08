@@ -1,10 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useConfig, LegoCardType } from '../store';
-import { Settings, Plus, Trash2, Save, Download } from 'lucide-react';
+import { Settings, Plus, Trash2, Save, Download, User, RefreshCw } from 'lucide-react';
+import { generateRecommendations, UserProfile } from '../services/recommendationEngine';
+
+const UserReportCard: React.FC<{
+  user: UserProfile;
+  index: number;
+  isCurrent: boolean;
+  onSetCurrent: () => void;
+}> = ({ user, index, isCurrent, onSetCurrent }) => {
+  const { config } = useConfig();
+  const [pageIndex, setPageIndex] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const recs = useMemo(() => generateRecommendations(user, config.searchDiscovery), [user, config.searchDiscovery]);
+  const totalPages = Math.ceil(recs.length / 7);
+  const start = pageIndex * 7;
+  const currentRecs = recs.slice(start, start + 7);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 500);
+    if (recs.length > 0) {
+      setPageIndex(prev => (prev + 1) % totalPages);
+    }
+  };
+
+  return (
+    <div className={`bg-white rounded-xl border ${isCurrent ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'} p-4 flex flex-col`}>
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center">
+          <User className="w-5 h-5 mr-2 text-gray-400" />
+          <h4 className="font-bold text-gray-800">{user.name}</h4>
+        </div>
+        <button 
+          onClick={onSetCurrent}
+          className={`text-xs px-2.5 py-1 rounded-full border ${isCurrent ? 'bg-blue-50 text-blue-600 border-blue-200 font-medium' : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'}`}
+        >
+          {isCurrent ? '当前体验' : '切换体验'}
+        </button>
+      </div>
+      
+      <div className="text-xs space-y-2 mb-4 text-gray-600 bg-gray-50 p-2.5 rounded-lg flex-1">
+        <div><span className="font-medium text-gray-700">特征：</span>{JSON.stringify(user.status)}</div>
+        <div><span className="font-medium text-gray-700">近期浏览：</span>{user.recentBrowse.length > 0 ? user.recentBrowse.join(', ') : '无'}</div>
+        <div><span className="font-medium text-gray-700">历史搜索：</span>{user.historySearch.length > 0 ? user.historySearch.join(', ') : '无'}</div>
+      </div>
+      
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <h5 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">生成的推荐词 (批次 {pageIndex + 1}/{totalPages})</h5>
+          <RefreshCw 
+            className={`w-3.5 h-3.5 text-gray-400 cursor-pointer hover:text-gray-600 ${isRefreshing ? 'animate-spin' : ''}`} 
+            onClick={handleRefresh} 
+          />
+        </div>
+        <div className="flex flex-wrap gap-1.5 min-h-[44px]">
+          {currentRecs.map((rec, rIdx) => (
+            <span key={rIdx} className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded border border-orange-100">
+              {rec.text}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const AdminPanel: React.FC = () => {
-  const { config, setConfig } = useConfig();
-  const [activeTab, setActiveTab] = useState<'discovery' | 'lego' | 'banners' | 'products'>('discovery');
+  const { config, setConfig, users, currentUserIndex, setCurrentUserIndex } = useConfig();
+  const [activeTab, setActiveTab] = useState<'discovery' | 'lego' | 'banners' | 'products' | 'users'>('discovery');
   const [productTab, setProductTab] = useState<'funds' | 'wealth'>('funds');
 
   const addDiscovery = () => {
@@ -112,7 +177,7 @@ export const AdminPanel: React.FC = () => {
           className={`flex-1 py-3 text-sm font-medium ${activeTab === 'discovery' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
           onClick={() => setActiveTab('discovery')}
         >
-          搜索发现配置
+          猜你想搜配置
         </button>
         <button 
           className={`flex-1 py-3 text-sm font-medium ${activeTab === 'lego' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
@@ -132,13 +197,19 @@ export const AdminPanel: React.FC = () => {
         >
           产品榜单配置
         </button>
+        <button 
+          className={`flex-1 py-3 text-sm font-medium ${activeTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+          onClick={() => setActiveTab('users')}
+        >
+          千人千面报表
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
         {activeTab === 'discovery' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-800">搜索发现词条</h3>
+              <h3 className="font-bold text-gray-800">猜你想搜词条</h3>
               <button onClick={addDiscovery} className="flex items-center text-sm text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-md">
                 <Plus className="w-4 h-4 mr-1" /> 添加词条
               </button>
@@ -696,6 +767,25 @@ export const AdminPanel: React.FC = () => {
                   </div>
 
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'users' && users && (
+          <div className="space-y-4">
+            <h3 className="font-bold text-gray-800">千人千面报表</h3>
+            <p className="text-sm text-gray-500">查看当前配置和交互产生的各用户推荐词表，切换当前生效用户以在模拟器中体验</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {users.map((user, i) => (
+                  <UserReportCard 
+                    key={user.id} 
+                    user={user} 
+                    index={i} 
+                    isCurrent={i === currentUserIndex} 
+                    onSetCurrent={() => setCurrentUserIndex(i)} 
+                  />
               ))}
             </div>
           </div>

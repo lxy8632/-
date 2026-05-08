@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { mockUsers, UserProfile } from './services/recommendationEngine';
 
 export type LegoCardType = 'wealth' | 'gold' | 'exchange' | 'banner';
 
@@ -88,34 +89,14 @@ export interface AppConfig {
   };
 }
 
-const defaultConfig: AppConfig = {
+export const defaultConfig: AppConfig = {
   searchDiscovery: [
     { 
-      text: '薪动有礼', 
+      text: '热门活动', 
       iconUrl: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='8' width='18' height='4' rx='1'/%3E%3Cpath d='M12 8v13'/%3E%3Cpath d='M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'/%3E%3Cpath d='M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'/%3E%3C/svg%3E",
       bgColor: '#fef2f2',
       textColor: '#ef4444'
-    },
-    { text: '黄金', iconUrl: 'https://s1.img-e.com/20260420/69e60b13368aa.png' },
-    { text: '购汇' },
-    { text: '积分兑换' },
-    { text: '换卡' },
-    { text: '积点' },
-    { text: '新丰利' },
-    { text: '外汇' },
-    { text: '贷款' },
-    { text: '限额' },
-    { text: '理财' },
-    { text: '基金' },
-    { text: '消费贷' },
-    { text: '信用卡' },
-    { text: '转账' },
-    { text: '存款' },
-    { text: '养老金' },
-    { text: '贵金属' },
-    { text: '大额存单' },
-    { text: '结构性存款' },
-    { text: '数字人民币' }
+    }
   ],
   hotSearches: [
     { title: '积存金', desc: '', type: 'hot' },
@@ -235,11 +216,33 @@ const defaultConfig: AppConfig = {
 const ConfigContext = createContext<{
   config: AppConfig;
   setConfig: React.Dispatch<React.SetStateAction<AppConfig>>;
-}>({ config: defaultConfig, setConfig: () => {} });
+  users: UserProfile[];
+  setUsers: React.Dispatch<React.SetStateAction<UserProfile[]>>;
+  currentUserIndex: number;
+  setCurrentUserIndex: React.Dispatch<React.SetStateAction<number>>;
+}>({ 
+  config: defaultConfig, 
+  setConfig: () => {},
+  users: mockUsers,
+  setUsers: () => {},
+  currentUserIndex: 0,
+  setCurrentUserIndex: () => {}
+});
 
 export const ConfigProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
-  return <ConfigContext.Provider value={{ config, setConfig }}>{children}</ConfigContext.Provider>;
+  const [users, setUsers] = useState<UserProfile[]>(mockUsers);
+  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  
+  return (
+    <ConfigContext.Provider value={{ 
+      config, setConfig,
+      users, setUsers,
+      currentUserIndex, setCurrentUserIndex
+    }}>
+      {children}
+    </ConfigContext.Provider>
+  );
 };
 
 export const useConfig = () => useContext(ConfigContext);

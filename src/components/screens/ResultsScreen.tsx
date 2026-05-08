@@ -6,9 +6,22 @@ import { useConfig } from '../../store';
 import { LegoCards } from '../LegoCards';
 
 export const ResultsScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: string) => void, query: string }> = ({ onNavigate, query }) => {
-  const { config } = useConfig();
+  const { config, users, setUsers, currentUserIndex } = useConfig();
   const [activeTab, setActiveTab] = useState('全部');
   const tabs = ['全部', '服务', '产品', '微应用', '内容', '活动', '生活'];
+
+  const handleBrowse = (word: string) => {
+    setUsers(prevUsers => {
+      const newUsers = [...prevUsers];
+      if (newUsers[currentUserIndex]) {
+        newUsers[currentUserIndex] = {
+          ...newUsers[currentUserIndex],
+          recentBrowse: [word, ...newUsers[currentUserIndex].recentBrowse.filter(w => w !== word)].slice(0, 10)
+        };
+      }
+      return newUsers;
+    });
+  };
 
   const [aiState, setAiState] = useState<'thinking' | 'typing' | 'complete'>('thinking');
   const [typedText, setTypedText] = useState('');
@@ -636,7 +649,7 @@ export const ResultsScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: 
             
             <div className="grid grid-cols-2 gap-3">
               {config.guessYouLike.products.map((product, idx) => (
-                <div key={product.id} className="bg-gradient-to-b from-orange-50/80 to-orange-50/10 rounded-xl p-3 border border-orange-100/50 relative overflow-hidden flex flex-col items-center">
+                <div key={product.id} onClick={() => handleBrowse(product.name)} className="bg-gradient-to-b from-orange-50/80 to-orange-50/10 rounded-xl p-3 border border-orange-100/50 relative overflow-hidden flex flex-col items-center cursor-pointer hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-center mb-2 w-full">
                     <h4 className="text-[14px] font-bold text-gray-800 truncate">{product.name}</h4>
                     {product.isHot && (

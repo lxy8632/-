@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Search, ScanLine, User, CreditCard, PiggyBank, Calendar, Coins, ArrowRightLeft, FileText, HandCoins, UserCircle, Grid, ChevronRight, Sparkles, Zap, Bell, ShieldCheck, TrendingUp } from 'lucide-react';
 import { ScreenType } from '../MobileSimulator';
+import { useConfig } from '../../store';
 
 const SmartPushLogo = () => (
   <div className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 pl-1.5 pr-2 py-1 rounded-bl-xl absolute top-0 right-0 shadow-sm z-20">
@@ -103,10 +104,25 @@ const smartCards = [
   }
 ];
 
-export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType) => void }> = ({ onNavigate }) => {
+export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType, query?: string) => void }> = ({ onNavigate }) => {
+  const { setUsers, currentUserIndex } = useConfig();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const totalSlides = smartCards.length + 1; // +1 for recent messages
+
+  const handleFeatureClick = (title: string) => {
+    setUsers(prevUsers => {
+      const newUsers = [...prevUsers];
+      if (newUsers[currentUserIndex]) {
+        newUsers[currentUserIndex] = {
+          ...newUsers[currentUserIndex],
+          recentBrowse: [title, ...newUsers[currentUserIndex].recentBrowse.filter(w => w !== title)].slice(0, 10)
+        };
+      }
+      return newUsers;
+    });
+    onNavigate('feature', title);
+  };
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -173,25 +189,25 @@ export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType) => void }> 
         </div>
 
         <div className="grid grid-cols-4 gap-4 text-center">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('财富总览')}>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
               <PiggyBank className="w-6 h-6" />
             </div>
             <span className="text-xs">财富总览</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('信用卡')}>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
               <CreditCard className="w-6 h-6" />
             </div>
             <span className="text-xs">信用卡</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('转账汇款')}>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
               <ArrowRightLeft className="w-6 h-6" />
             </div>
             <span className="text-xs">转账汇款</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('账户查询')}>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2">
               <UserCircle className="w-6 h-6" />
             </div>
@@ -203,35 +219,35 @@ export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType) => void }> 
       {/* Main Grid */}
       <div className="px-4 -mt-6">
         <div className="bg-white rounded-2xl shadow-sm p-4 grid grid-cols-4 gap-y-6 text-center">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('理财')}>
             <PiggyBank className="w-8 h-8 text-yellow-600 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">理财产品</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('基金')}>
             <Coins className="w-8 h-8 text-blue-600 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">基金</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('存款')}>
             <PiggyBank className="w-8 h-8 text-orange-500 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">存款</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('天天宝')}>
             <Calendar className="w-8 h-8 text-green-600 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">天天宝</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('黄金')}>
             <Coins className="w-8 h-8 text-yellow-500 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">黄金</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('交易明细')}>
             <FileText className="w-8 h-8 text-gray-600 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">交易明细</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('借钱')}>
             <HandCoins className="w-8 h-8 text-blue-500 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">我要贷款</span>
           </div>
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" onClick={() => handleFeatureClick('全部应用')}>
             <Grid className="w-8 h-8 text-gray-400 mb-1" strokeWidth={1.5} />
             <span className="text-xs text-gray-700">全部</span>
           </div>
@@ -297,7 +313,10 @@ export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType) => void }> 
               {/* Footer / Button */}
               <div className="flex justify-between items-end relative z-10 pl-1">
                 <span className="text-xs text-gray-500 mb-0.5">{card.extra}</span>
-                <button className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center transition-transform active:scale-95 ${card.btnClass}`}>
+                <button 
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center transition-transform active:scale-95 z-20 cursor-pointer ${card.btnClass}`}
+                  onClick={() => handleFeatureClick(card.title)}
+                >
                   {card.buttonText} <ChevronRight className="w-3 h-3 ml-0.5" />
                 </button>
               </div>
@@ -318,7 +337,10 @@ export const HomeScreen: React.FC<{ onNavigate: (screen: ScreenType) => void }> 
 
       {/* Banner */}
       <div className="px-4 mt-4">
-        <div className="bg-red-50 rounded-xl p-4 flex justify-between items-center border border-red-100">
+        <div 
+          className="bg-red-50 rounded-xl p-4 flex justify-between items-center border border-red-100 cursor-pointer"
+          onClick={() => handleFeatureClick('兴闪贷')}
+        >
           <div>
             <h3 className="text-red-600 font-bold text-lg">"兴"春有礼</h3>
             <p className="text-red-500 text-xs mt-1">兴闪贷年化利率（单利）3.0%起</p>
